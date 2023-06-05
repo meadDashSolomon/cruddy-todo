@@ -41,10 +41,48 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
+  // read the file names in data directory
+  fs.readdir(exports.dataDir, (err, files) => {
+    // if err,
+    if (err) {
+      // cb with err
+      callback(err);
+    } else {
+      // create variable set to empty array
+      let toDo = [];
+      // let filesRead = 0;
+      // iterate over files
+      files.forEach((file) => {
+        const filePath = path.join(exports.dataDir, file);
+        fs.readFile(filePath, (err, text) => {
+          if (err) {
+            callback(err);
+          } else {
+            toDo.push({"id": file, "text": file});
+
+
+          }
+        });
+
+
+        callback(null, toDo);
+      });
+        // read each file
+        // if err,
+          // cb with err
+        // else
+          // get ID from file
+          // push ID and text placeholder to array
+          // increment file counter
+            // if file counter equals length of files
+              // cb with null and array
+
+    }
   });
-  callback(null, data);
+  // var data = _.map(items, (text, id) => {
+  //   return { id, text };
+  // });
+  // callback(null, data);
 };
 
 exports.readOne = (id, callback) => {
