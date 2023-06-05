@@ -26,7 +26,7 @@ exports.create = (text, callback) => {
           if (err) {
             callback(err);
           } else {
-            callback(null, {id: uniqueId, text: text, items: items});
+            callback(null, {id: uniqueId, text: text});
           }
         });
       // err first conditional
