@@ -8,9 +8,36 @@ var items = {};
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  var id = counter.getNextUniqueId();
-  items[id] = text;
-  callback(null, { id, text });
+  // add todos to items object with unique id as key and text as value
+
+  //  get unique ID for new todo
+    counter.getNextUniqueId((err, uniqueId) => {
+      // err first conditional
+      if (err) {
+        callback(err);
+      } else {
+        items[uniqueId] = text;
+
+        // create filename with unique ID
+        const filePath = path.join(exports.dataDir, `${uniqueId}.txt`);
+
+      // save todo text to file
+        fs.writeFile(filePath, text, (err) => {
+          if (err) {
+            callback(err);
+          } else {
+            callback(null, {id: uniqueId, text: text, items: items});
+          }
+        });
+      // err first conditional
+
+      // pass todo object to cb on success
+      }
+
+    });
+  // var id = counter.getNextUniqueId();
+  // items[id] = text;
+  // callback(null, { id, text });
 };
 
 exports.readAll = (callback) => {
