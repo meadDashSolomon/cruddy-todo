@@ -47,7 +47,9 @@ exports.readAll = (callback) => {
     if (err) {
       // cb with err
       callback(err);
-    } else if (files.length === 0) {
+    }
+    // edge case
+    else if (files.length === 0) {
       callback(null, [])
     } else {
       // create variable set to empty array
@@ -88,12 +90,24 @@ exports.readAll = (callback) => {
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  const filePath = path.join(exports.dataDir, `${id}.txt`);
+  fs.readFile(filePath, (err, fileContent) => {
+    if (err) {
+      callback(err);
+    } else {
+      callback(null, {"id": id, "text": fileContent.toString()});
+    }
+    // edge case for non-existant todo should return error
+  })
+
+
+
+  // var text = items[id];
+  // if (!text) {
+  //   callback(new Error(`No item with id: ${id}`));
+  // } else {
+  //   callback(null, { id, text });
+  // }
 };
 
 exports.update = (id, text, callback) => {
