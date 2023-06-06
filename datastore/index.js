@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
+const Promise = require('bluebird');
+
+const readFile = Promise.promisify(require("fs").readFile);
 
 var items = {};
 
@@ -41,36 +44,61 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
-  // read the file names in data directory
   fs.readdir(exports.dataDir, (err, files) => {
-    // if err,
-    if (err) {
-      // cb with err
-      callback(err);
-    }
-    // edge case
-    else if (files.length === 0) {
-      callback(null, [])
-    } else {
-      // create variable set to empty array
-      let toDo = [];
-      let filesRead = 0;
-      // iterate over files
-      files.forEach((file) => {
+      const promises = files.map((file) => {
         const filePath = path.join(exports.dataDir, file);
-        fs.readFile(filePath, (err, text) => {
-          if (err) {
-            callback(err);
-          } else {
-            const fileName = path.basename(file, '.txt');
-            toDo.push({"id": fileName, "text": fileName});
-            filesRead++;
-            if (filesRead === files.length) {
-              callback(null, toDo);
-            }
-          }
-        });
+        const fileName = path.basename(file, '.txt');
+
+        return readFile(filePath)
+          .then((fileContents) => (
+            { "id": fileName, "text": fileContents.toString() }
+            ))
+          .catch((error) => {
+            throw error;
+          });
       });
+
+      Promise.all(promises)
+        .then((resolvedArray) => {
+          callback(null, resolvedArray);
+        });
+    });
+  };
+
+
+
+
+
+  // read the file names in data directory
+  // fs.readdir(exports.dataDir, (err, files) => {
+  //   // if err,
+  //   if (err) {
+  //     // cb with err
+  //     callback(err);
+  //   }
+  //   // edge case
+  //   else if (files.length === 0) {
+  //     callback(null, [])
+  //   } else {
+  //     // create variable set to empty array
+  //     let toDo = [];
+  //     let filesRead = 0;
+  //     // iterate over files
+  //     files.forEach((file) => {
+  //       const filePath = path.join(exports.dataDir, file);
+  //       fs.readFile(filePath, (err, text) => {
+  //         if (err) {
+  //           callback(err);
+  //         } else {
+  //           const fileName = path.basename(file, '.txt');
+  //           toDo.push({"id": fileName, "text": text});
+  //           filesRead++;
+  //           if (filesRead === files.length) {
+  //             callback(null, toDo);
+  //           }
+  //         }
+  //       });
+  //     });
         // read each file
         // if err,
           // cb with err
@@ -81,13 +109,13 @@ exports.readAll = (callback) => {
             // if file counter equals length of files
               // cb with null and array
 
-    }
-  });
+  //   }
+  // });
   // var data = _.map(items, (text, id) => {
   //   return { id, text };
   // });
   // callback(null, data);
-};
+
 
 exports.readOne = (id, callback) => {
   const filePath = path.join(exports.dataDir, `${id}.txt`);
