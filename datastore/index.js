@@ -47,10 +47,12 @@ exports.readAll = (callback) => {
     if (err) {
       // cb with err
       callback(err);
+    } else if (files.length === 0) {
+      callback(null, [])
     } else {
       // create variable set to empty array
       let toDo = [];
-      // let filesRead = 0;
+      let filesRead = 0;
       // iterate over files
       files.forEach((file) => {
         const filePath = path.join(exports.dataDir, file);
@@ -58,14 +60,14 @@ exports.readAll = (callback) => {
           if (err) {
             callback(err);
           } else {
-            toDo.push({"id": file, "text": file});
-
-
+            const fileName = path.basename(file, '.txt');
+            toDo.push({"id": fileName, "text": fileName});
+            filesRead++;
+            if (filesRead === files.length) {
+              callback(null, toDo);
+            }
           }
         });
-
-
-        callback(null, toDo);
       });
         // read each file
         // if err,
